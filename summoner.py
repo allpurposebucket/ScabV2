@@ -1,36 +1,51 @@
-import api
+from api import get_matches_by_puuid, get_summoner_name_from_id
+from rankeddata import RankedData
+from accountdata import AccountData
+from masterydata import MasteryData
+
 class Summoner:
     def __init__(self, name):
         self.name = name
-        self.get_initial_data()
-        self.get_ranked_data()
+        self.matches = []
 
-    def get_initial_data(self):
-        data = api.get_summoner_account(self)
-        self.id = data["id"]
-        self.account_id = data["accountId"]
-        self.encrypted_puuid = data["puuid"]
-        self.profile_icon_id = data["profileIconId"]
-        self.revision_date = data["revisionDate"]
-        self.summoner_level = data["summonerLevel"]
+    def get_matches(self, count):
+        from match import Match
 
-    def get_ranked_data(self):
-        data = api.get_summoner_rank(self)
-        self.league_id = data["leagueId"]
-        self.queue_type = data["queueType"]
-        self.tier = data["tier"]
-        self.rank = data["rank"]
-        self.league_points = data["leaguePoints"]
-        self.wins = data["wins"]
-        self.losses = data["losses"]
-        self.veteran = data["veteran"]
-        self.inactive = data["inactive"]
-        self.fresh_blood = data["freshBlood"]
-        self.hot_streak = data["hotStreak"]
+        match_ids = get_matches_by_puuid(self.account_data.puuid, count)
+        self.matches = [Match(match_id) for match_id in match_ids]
 
+    def get_all_data(self, mastery_count, match_count):
+        self.account_data.load()
+        self.ranked_data.load()
+        self.mastery_data.load(mastery_count)
+        self.get_matches(match_count)
+
+    def __getattr__(self, name):
+        # Check if the requested attribute is in the instance dictionary
+        if name in self.__dict__:
+            return self.__dict__[name]
+        
+        # If not found, dynamically load the attribute
+        if name == "account_data":
+            self.account_data = AccountData(self)
+            self.account_data.load()
+            return self.account_data
+
+        elif name == "ranked_data":
+            self.ranked_data = RankedData(self)
+            self.ranked_data.load()
+            return self.ranked_data
+
+        elif name == "mastery_data":
+            self.mastery_data = MasteryData(self)
+            self.mastery_data.load()
+            return self.mastery_data
+
+        else:
+            raise AttributeError(f"'Summoner' object has no attribute '{name}'")
 
     def __str__(self):
-        return f"id: {self.id}\naccountId: {self.account_id}\npuuid: {self.encrypted_puuid}\nname: {self.name}\nprofileIconId: {self.profile_icon_id}\nrevisionDate: {self.revision_date}\nsummonerLevel: {self.summoner_level}"
+        return f"Name: {self.name}\n{self.account_data}\n{self.ranked_data}\n{self.mastery_data}"
 
-me = Summoner("username")
-print(type(me.losses))
+    def __repr__(self):
+        return str(self)
