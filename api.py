@@ -26,7 +26,7 @@ def rate_limit(endpoint):
     elif r.status_code == 403:
         print("API key invalid. Exiting...")
         sys.exit()
-    time.sleep(0.9)
+    time.sleep(0)
     return r
 
 def get_game_version():
@@ -55,11 +55,11 @@ def get_summoner_mastery_data(summoner, count):
         return []
     return data
 
-def get_champion_data(champion):
+def get_champion_data(champion_id):
     r = requests.get(base_url_datadragon + "/cdn/" + get_game_version() + "/data/en_US/championFull.json")
     data = json.loads(r.text)["data"]
     for champ in data:
-        if champion.id == int(data[champ]["key"]):
+        if champion_id == int(data[champ]["key"]):
             return data[champ]
             
 def get_match_data(match_id):

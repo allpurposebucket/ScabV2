@@ -1,4 +1,4 @@
-from api import get_matches_by_puuid, get_summoner_name_from_id
+from api import get_matches_by_puuid
 from rankeddata import RankedData
 from accountdata import AccountData
 from masterydata import MasteryData
@@ -21,11 +21,9 @@ class Summoner:
         self.get_matches(match_count)
 
     def __getattr__(self, name):
-        # Check if the requested attribute is in the instance dictionary
         if name in self.__dict__:
             return self.__dict__[name]
         
-        # If not found, dynamically load the attribute
         if name == "account_data":
             self.account_data = AccountData(self)
             self.account_data.load()
@@ -45,7 +43,7 @@ class Summoner:
             raise AttributeError(f"'Summoner' object has no attribute '{name}'")
 
     def __str__(self):
-        return f"Name: {self.name}\n{self.account_data}\n{self.ranked_data}\n{self.mastery_data}"
+        return f"Name: {self.name}\n"
 
     def __repr__(self):
         return str(self)

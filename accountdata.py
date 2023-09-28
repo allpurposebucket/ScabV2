@@ -1,5 +1,3 @@
-# accountdata.py
-
 from api import get_summoner_account_data
 
 class AccountData:
